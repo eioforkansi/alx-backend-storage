@@ -3,6 +3,7 @@
 Main file
 """
 from exercise import Cache
+import redis
 
 cache = Cache()
 
@@ -15,3 +16,4 @@ TEST_CASES = {
 for value, fn in TEST_CASES.items():
     key = cache.store(value)  # Store the value in Redis
     assert cache.get(key, fn=fn) == value  # Assert that retrieved value is correct
+    print(cache.get(key, fn=fn))
