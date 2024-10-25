@@ -6,7 +6,7 @@ Module that provide Cache class
 
 import redis
 import uuid
-from typing import Union
+from typing import Union, Callable, Optional
 
 
 class Cache:
@@ -26,7 +26,33 @@ class Cache:
         store the input data in Redis using the random key and return the key.
         """
         key = str(uuid.uuid4())
-
         self._redis.set(key, data)
-
         return key
+
+    def get(
+            self, key: str, fn: Optional[Callable] = None
+            ) -> Union[str, bytes, int, float]:
+        """
+        Method that take a key string argument and
+        an optional Callable argument named fn.
+        This callable will be used to convert the
+        data back to the desired format.
+        """
+        data = self._redis.get(key)
+        if data is None:
+            return None
+        if fn is not None:
+            return fn(data)
+        return data
+
+    def get_str(self, key: str) -> str:
+        '''
+        Retrieves a string value from a Redis data storage.
+        '''
+        return self.get(key, fn=lambda data: data.decode("utf-8"))
+
+    def get_int(self, key: str) -> int:
+        '''
+        Retrieves an integer value from a Redis data storage.
+        '''
+        return self.get(key, lambda data: int(data))
