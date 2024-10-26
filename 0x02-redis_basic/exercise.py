@@ -10,6 +10,19 @@ from typing import Union, Callable, Optional
 from functools import wraps
 
 
+def replay(method: Callable) -> None:
+    input_key = method.__qualname__ + ":inputs" 
+    output_key = method.__qualname__ + ":outputs" 
+    inputs = redis.Redis().lrange(input_key, 0, -1)
+    outputs = redis.Redis().lrange(output_key, 0, -1)
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+    for input, output in zip(inputs, outputs):
+        decoded_input = input.decode("utf-8")
+        decoded_output = output.decode("utf-8")
+        print(f"{method.__qualname__}(*{decoded_input}) -> {decoded_output}")
+
+
+
 def call_history(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwds):
