@@ -11,32 +11,29 @@ from functools import wraps
 
 
 def replay(method: Callable) -> None:
-    input_key = method.__qualname__ + ":inputs" 
-    output_key = method.__qualname__ + ":outputs" 
+    input_key = method.__qualname__ + ":inputs"
+    output_key = method.__qualname__ + ":outputs"
     inputs = redis.Redis().lrange(input_key, 0, -1)
     outputs = redis.Redis().lrange(output_key, 0, -1)
     print(f"{method.__qualname__} was called {len(inputs)} times:")
     for input, output in zip(inputs, outputs):
-        print(
-            f"{method.__qualname__}
-            (*{input.decode("utf-8")}) 
-            -> 
-            {output.decode("utf-8")}"
-            )
-
+        decoded_input = input.decode("utf-8")
+        decoded_output = output.decode("utf-8")
+        print(f"{method.__qualname__}(*{decoded_input}) -> {decoded_output}")
 
 
 def call_history(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwds):
-        input_key = method.__qualname__ + ":inputs" 
-        output_key = method.__qualname__ + ":outputs" 
+        input_key = method.__qualname__ + ":inputs"
+        output_key = method.__qualname__ + ":outputs"
         self._redis.rpush(input_key, str(args))
 
         output = method(self, *args, **kwds)
         self._redis.rpush(output_key, str(output))
         return output
     return wrapper
+
 
 def count_calls(method: Callable) -> Callable:
     @wraps(method)
