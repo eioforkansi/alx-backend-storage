@@ -11,6 +11,9 @@ from functools import wraps
 
 
 def replay(method: Callable) -> None:
+    """
+    Function to display the history of calls of a particular function.
+    """
     input_key = method.__qualname__ + ":inputs"
     output_key = method.__qualname__ + ":outputs"
     inputs = redis.Redis().lrange(input_key, 0, -1)
