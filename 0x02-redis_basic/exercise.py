@@ -10,6 +10,18 @@ from typing import Union, Callable, Optional
 from functools import wraps
 
 
+def call_history(method: Callable) -> Callable:
+    @wraps(method)
+    def wrapper(self, *args, **kwds):
+        input_key = method.__qualname__ + ":inputs" 
+        output_key = method.__qualname__ + ":outputs" 
+        self._redis.rpush(input_key, str(args))
+
+        output = method(self, *args, **kwds)
+        self._redis.rpush(output_key, str(output))
+        return output
+    return wrapper
+
 def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwds):
@@ -30,6 +42,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Method that takes a data argument and returns a string.
@@ -44,10 +57,9 @@ class Cache:
             self, key: str, fn: Optional[Callable] = None
             ) -> Union[str, bytes, int, float]:
         """
-        Method that take a key string argument and
-        an optional Callable argument named fn.
-        This callable will be used to convert the
-        data back to the desired format.
+        Method that take a key string argument and an optional
+        Callable argument named fn. This callable will be used
+        to convert the data back to the desired format.
         """
         data = self._redis.get(key)
         if data is None:
