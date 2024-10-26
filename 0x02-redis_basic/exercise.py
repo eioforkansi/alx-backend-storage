@@ -26,6 +26,10 @@ def replay(method: Callable) -> None:
 
 
 def call_history(method: Callable) -> Callable:
+    """
+    Decorator to store the history of inputs
+    and outputs for a particular function.
+    """
     @wraps(method)
     def wrapper(self, *args, **kwds):
         input_key = method.__qualname__ + ":inputs"
@@ -39,6 +43,10 @@ def call_history(method: Callable) -> Callable:
 
 
 def count_calls(method: Callable) -> Callable:
+    """
+    Decorator that takes a single method Callable
+    argument and returns a Callable.
+    """
     @wraps(method)
     def wrapper(self, *args, **kwds):
         key = method.__qualname__
