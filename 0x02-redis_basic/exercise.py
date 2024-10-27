@@ -58,12 +58,12 @@ def count_calls(method: Callable) -> Callable:
 
 class Cache:
     """
-    Stores an instance of the Redis client as a private variable named
-    _redis (using redis.Redis()) and flush the instance using flushdb.
+    Represents an object for storing data in a Redis data storage.
     """
     def __init__(self):
         """
-        Initializes a Cache instance.
+        Stores an instance of the Redis client as a private variable named
+        _redis (using redis.Redis()) and flush the instance using flushdb.
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
