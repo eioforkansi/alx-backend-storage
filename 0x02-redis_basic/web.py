@@ -3,8 +3,9 @@
 """
 Module with the implementation of get_page which
 uses the request module to obtain the HTML content
-of a particular URL and returns it.  
+of a particular URL and returns it.
 """
+
 
 import requests
 import redis
@@ -13,29 +14,35 @@ from functools import wraps
 
 cache = redis.Redis()
 
-def cache_page(func):
+
+def count(func: Callable) -> Callable:
+    """
+    Track how many times a particular URL
+    was accessed in the key "count:{url}"
+    """
     @wraps(func)
-    def wrapper(url: str) -> str:
-        # Track access count
-        cache_key_count = f"count:{url}"
-        cache.incr(cache_key_count)
-
-        # Cache key for storing the page content
-        cache_key_content = f"content:{url}"
-        cached_content = cache.get(cache_key_content)
-
-        # Return cached content if available
-        if cached_content:
-            return cached_content.decode('utf-8')
-
-        # Call the original function and cache the result
-        content = func(url)
-        cache.setex(cache_key_content, 10, content)
-
-        return content
+    def wrapper(url, *args, **kwds):
+        cache.incr(f"count:{url}")
+        result = func(url, *args, **kwds)
+        return result
     return wrapper
 
-@cache_page
+
+@count
 def get_page(url: str) -> str:
-    response = requests.get(url)
-    return response.text
+    """
+    Cache the result with an expiration time of 10 seconds.
+    """
+    content = cache.get(url)
+
+    if content:
+        return content.decode("utf-8")
+    else:
+        response = requests.get(url)
+        cache.setex(url, 10, response.text)
+        return response.text
+
+
+url = "http://slowwly.robertomurray.co.uk"
+get_page(url)
+print(cache.get(f"count:{url}"))
