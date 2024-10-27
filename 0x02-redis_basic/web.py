@@ -21,7 +21,7 @@ def count(func: Callable) -> Callable:
     was accessed in the key "count:{url}"
     """
     @wraps(func)
-    def wrapper(url, *args, **kwds):
+    def wrapper(url: str, *args, **kwds) -> str:
         cache.incr(f"count:{url}")
         result = func(url, *args, **kwds)
         return result
