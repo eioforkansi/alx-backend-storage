@@ -41,5 +41,3 @@ def get_page(url: str) -> str:
         response = requests.get(url)
         cache.setex(url, 10, response.text)
         return response.text
-
-
