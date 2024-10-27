@@ -32,7 +32,6 @@ def get_page(url: str) -> str:
         cache.setex(url, 10, response.text)
         return response.text
 
-
 url = "http://slowwly.robertomurray.co.uk"
 get_page(url)
 print(cache.get(f"count:{url}"))
