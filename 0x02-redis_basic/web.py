@@ -43,6 +43,6 @@ def get_page(url: str) -> str:
         return response.text
 
 
-url = "http://slowwly.robertomurray.co.uk"
+url = "http://slowwly.robertomurray.co.u"
 get_page(url)
 print(cache.get(f"count:{url}"))
